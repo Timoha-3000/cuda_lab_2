@@ -6,17 +6,31 @@
 #define N 1024 // Размер векторов
 #define BLOCK_SIZE 256
 
-// Ядро, приводящее к объединению запросов в одну транзакцию
+/// <summary>
+/// Ядро, приводящее к объединению запросов в одну транзакцию
+/// </summary>
+/// <param name="A">- Первый вектор</param>
+/// <param name="B">- Второй вектор</param>
+/// <param name="C">- Результирующий вектор</param>
+/// <param name="n">- Размер вектора</param>
 static __global__ void multiplyCoalesced(int* A, int* B, int* C, int n) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
+
     if (idx < n) {
         C[idx] = A[idx] * B[idx];
     }
 }
 
-// Ядро, не приводящее к объединению запросов в одну транзакцию
+/// <summary>
+/// Ядро, не приводящее к объединению запросов в одну транзакцию
+/// </summary>
+/// <param name="A">- Первый вектор</param>
+/// <param name="B">- Второй вектор</param>
+/// <param name="C">- Результирующий вектор</param>
+/// <param name="n">- Размер вектора</param>
 static __global__ void multiplyNonCoalesced(int* A, int* B, int* C, int n) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
+
     if (idx < n) {
         int stride = gridDim.x * blockDim.x;
         for (int i = idx; i < n; i += stride) {
@@ -25,7 +39,13 @@ static __global__ void multiplyNonCoalesced(int* A, int* B, int* C, int n) {
     }
 }
 
-// Верификация результата
+/// <summary>
+/// Верификация результата на проце
+/// </summary>
+/// <param name="A">- Первый вектор</param>
+/// <param name="B">- Второй вектор</param>
+/// <param name="C">- Результирующий вектор</param>
+/// <param name="n">- Размер векторов</param>
 void verifyResult(int* A, int* B, int* C, int n) {
     for (int i = 0; i < n; ++i) {
         if (C[i] != A[i] * B[i]) {
@@ -33,9 +53,16 @@ void verifyResult(int* A, int* B, int* C, int n) {
             return;
         }
     }
+
     printf("Verification passed!\n");
 }
 
+/// <summary>
+/// первая задча в лабе
+/// чет там умножить два вектора
+/// чет два способа типа оптимальный и не очень
+/// ну и сравнить типа скорость работы
+/// </summary>
 void multVetorsTask1() {
     int* h_A, * h_B, * h_C, * h_C_verif;
     int* d_A, * d_B, * d_C;
